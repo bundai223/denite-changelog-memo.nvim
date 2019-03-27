@@ -1,4 +1,4 @@
-
+import re
 from .base import Base
 
 LINE_NUMBER_SYNTAX = (
