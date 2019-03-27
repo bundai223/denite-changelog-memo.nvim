@@ -13,7 +13,7 @@ class Source(Base):
     def __init__(self, vim):
         super().__init__(vim)
 
-        self.name = 'changelog-memo'
+        self.name = 'changelog_memo'
         self.kind = 'file'
         self.matchers = ['matcher_regexp']
         self.sorters = []
