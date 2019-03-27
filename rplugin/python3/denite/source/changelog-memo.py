@@ -57,7 +57,7 @@ class Source(Base):
             blocks = []
             # lines = map(lambda x: tab_removal.sub("", x), self.vim.call('getbufline', bufnr, 1, '$')))
             raw_lines = self.vim.call('getbufline', bufnr, 1, '$')
-            for line in list(filter(lambda t: date_regex.search(t) == False), raw_lines)):
+            for line in list(filter(lambda t: date_regex.search(t) == False), raw_lines):
                 l = tab_removal.sub("", line)
                 if entry_regex.search(l):
                     blocks.append(l)
