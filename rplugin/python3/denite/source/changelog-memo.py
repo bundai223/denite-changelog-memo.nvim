@@ -13,7 +13,7 @@ class Source(Base):
     def __init__(self, vim):
         super().__init__(vim)
 
-        self.name = 'changelog_memo'
+        self.name = 'changelog-memo'
         self.kind = 'file'
         self.matchers = ['matcher_regexp']
         self.sorters = []
@@ -49,22 +49,37 @@ class Source(Base):
     def gather_candidates(self, context):
         linenr = context['__linenr']
         candidates = []
+        tab_removal = re.compile("^\t", re.M)
+        entry_regex = re.compile("^\* .*:")
+        date_regex = re.compile("^\t")
+
         for bufnr in context['__bufnrs']:
-            lines = [{
-                'word': x,
-                'abbr': (context['__fmt'] % (i + 1, x)),
+            blocks = []
+            # lines = map(lambda x: tab_removal.sub("", x), self.vim.call('getbufline', bufnr, 1, '$')))
+            raw_lines = self.vim.call('getbufline', bufnr, 1, '$')
+            for line in list(filter(lambda t: !date_regex.search(t)), raw_lines)):
+                l = tab_removal.sub("", line)
+                if entry_regex.search(l):
+                    blocks.append(l)
+                else:
+                    blocks[-1] = "{blocks[-1]}\n{l}"
+
+            logs = [{
+                'word': text,
+                'abbr': (context['__fmt'] % (i + 1, text)),
                 'action__path': self.vim.call('bufname', bufnr),
                 'action__line': (i + 1),
-                'action__text': x,
-            } for [i, x] in enumerate(
-                self.vim.call('getbufline', bufnr, 1, '$'))]
+                'action__text': text,
+            } for [i, text] in enumerate(blocks)]
+
             if context['__emptiness'] == 'noempty':
-                lines = list(filter(lambda c: c['word'] != '', lines))
+                logs = list(filter(lambda c: c['word'] != '', logs))
+
             if context['__direction'] == 'all':
-                candidates += lines
+                candidates += logs
             elif context['__direction'] == 'backward':
-                candidates += list(reversed(lines[:linenr])) + list(
-                    reversed(lines[linenr:]))
+                candidates += list(reversed(logs[:linenr])) + list(
+                    reversed(logs[linenr:]))
             else:
-                candidates += lines[linenr-1:] + lines[:linenr-1]
+                candidates += logs[linenr-1:] + logs[:linenr-1]
         return candidates
