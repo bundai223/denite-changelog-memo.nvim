@@ -1,2 +1,2 @@
-# denite-changelog-memo.nvim
+# vim-denite-cgrep
 Denite source for changelog memo 
